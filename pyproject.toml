@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "git-worklog"
+version = "0.1.0"
+description = "Turn local Git commits into Markdown or JSON work summaries"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+
+[project.scripts]
+git-worklog = "git_worklog.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["git_worklog*"]
