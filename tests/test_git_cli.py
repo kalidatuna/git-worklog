@@ -5,6 +5,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 from git_worklog.cli import main
@@ -23,6 +24,9 @@ class GitCliTests(unittest.TestCase):
                 "GIT_AUTHOR_NAME": "Ada", "GIT_AUTHOR_EMAIL": "ada@example.test",
                 "GIT_COMMITTER_NAME": "Ada", "GIT_COMMITTER_EMAIL": "ada@example.test",
             })
+            utc_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            env["GIT_AUTHOR_DATE"] = utc_date
+            env["GIT_COMMITTER_DATE"] = utc_date
             subprocess.run(["git", "-C", directory, "commit", "-qm", "Add note"], check=True, env=env)
             self.assertEqual(read_commits(repo)[0].subject, "Add note")
             output = io.StringIO()

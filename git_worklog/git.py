@@ -35,7 +35,8 @@ def read_commits(repository: Path, include_merges: bool = False) -> list[Commit]
             sha, authored, author, subject = (
                 field.decode("utf-8", errors="replace") for field in fields[index:index + 4]
             )
-            commits.append(Commit(sha, datetime.fromisoformat(authored), author, subject))
+            iso_date = authored.removesuffix("Z") + "+00:00" if authored.endswith("Z") else authored
+            commits.append(Commit(sha, datetime.fromisoformat(iso_date), author, subject))
     except ValueError as error:
         raise GitError(f"invalid Git date: {error}") from error
     return commits
