@@ -11,6 +11,8 @@ Filtering uses author timestamps and a rolling interval of N 24-hour days.
 Dates in output are converted to UTC, so a commit near midnight may appear on
 a different day than in your local timezone. Future-dated commits are omitted.
 The author filter matches a case-insensitive substring of the author name.
+A date window larger than the representable calendar includes all past commits
+instead of overflowing; future-dated commits remain excluded.
 
 The command reads all reachable commits. Large repositories may take longer.
 Its Markdown output is intended for personal notes; commit subjects and author
