@@ -3,11 +3,16 @@
 The report reads the current local repository history with `git log`. It
 does not query GitHub, inspect uncommitted changes, or infer issue or pull
 request activity. Merge commits are excluded unless requested.
+Commits with empty messages are counted and keep an empty subject in the output.
+An initialized repository whose current branch has no commits produces an empty
+report. Directories outside a Git repository still produce an error.
 
 Filtering uses author timestamps and a rolling interval of N 24-hour days.
 Dates in output are converted to UTC, so a commit near midnight may appear on
 a different day than in your local timezone. Future-dated commits are omitted.
 The author filter matches a case-insensitive substring of the author name.
+A date window larger than the representable calendar includes all past commits
+instead of overflowing; future-dated commits remain excluded.
 
 The command reads all reachable commits. Large repositories may take longer.
 Its Markdown output is intended for personal notes; commit subjects and author

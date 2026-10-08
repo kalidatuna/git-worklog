@@ -12,7 +12,10 @@ def recent_commits(
     if days < 1:
         raise ValueError("days must be at least 1")
     now = now or datetime.now(timezone.utc)
-    cutoff = now - timedelta(days=days)
+    try:
+        cutoff = now - timedelta(days=days)
+    except OverflowError:
+        cutoff = datetime.min.replace(tzinfo=timezone.utc)
     selected = [
         commit for commit in commits
         if cutoff <= commit.authored_at.astimezone(timezone.utc) <= now
