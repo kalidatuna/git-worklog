@@ -23,6 +23,18 @@ def read_commits(repository: Path, include_merges: bool = False) -> list[Commit]
     except OSError as error:
         raise GitError(str(error)) from error
     if result.returncode:
+        head = subprocess.run(
+            ["git", "-C", str(repository), "symbolic-ref", "--quiet", "HEAD"],
+            capture_output=True, check=False,
+        )
+        if head.returncode == 0:
+            reference = head.stdout.decode("utf-8", errors="replace").strip()
+            exists = subprocess.run(
+                ["git", "-C", str(repository), "show-ref", "--verify", "--quiet", reference],
+                capture_output=True, check=False,
+            )
+            if exists.returncode == 1:
+                return []
         raise GitError(result.stderr.decode("utf-8", errors="replace").strip())
     if not result.stdout:
         return []

@@ -4,6 +4,8 @@ The report reads the current local repository history with `git log`. It
 does not query GitHub, inspect uncommitted changes, or infer issue or pull
 request activity. Merge commits are excluded unless requested.
 Commits with empty messages are counted and keep an empty subject in the output.
+An initialized repository whose current branch has no commits produces an empty
+report. Directories outside a Git repository still produce an error.
 
 Filtering uses author timestamps and a rolling interval of N 24-hour days.
 Dates in output are converted to UTC, so a commit near midnight may appear on
