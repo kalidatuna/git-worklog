@@ -26,7 +26,8 @@ def read_commits(repository: Path, include_merges: bool = False) -> list[Commit]
         raise GitError(result.stderr.decode("utf-8", errors="replace").strip())
     if not result.stdout:
         return []
-    fields = result.stdout.rstrip(b"\0").split(b"\0")
+    # Remove the record terminator, preserving an empty final subject field.
+    fields = result.stdout.removesuffix(b"\0").split(b"\0")
     if len(fields) % 4:
         raise GitError("unexpected Git log format")
     commits: list[Commit] = []
