@@ -18,3 +18,11 @@ class CliOptionsTests(unittest.TestCase):
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
             main([".", "--auth", "Ada"])
         self.assertEqual(error.exception.code, 2)
+
+    def test_version_works_without_a_repository(self):
+        from git_worklog import __version__
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as error:
+            main(["--version"])
+        self.assertEqual(error.exception.code, 0)
+        self.assertIn(__version__, output.getvalue())

@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from . import __version__
 from .filtering import recent_commits
 from .git import GitError, read_commits
 from .render import render_markdown
@@ -22,6 +23,7 @@ def positive_days(value: str) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Summarize local Git history", allow_abbrev=False)
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("repository", type=Path)
     parser.add_argument("--days", type=positive_days, default=7)
     parser.add_argument("--author", help="case-insensitive author name filter")
