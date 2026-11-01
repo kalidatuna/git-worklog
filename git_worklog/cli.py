@@ -51,6 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--name", help="override the Markdown report repository name")
     parser.add_argument("--days", type=positive_days, default=7)
     parser.add_argument("--until", type=utc_timestamp, help="end the rolling window at this ISO 8601 timestamp")
+    parser.add_argument("--grep", help="case-insensitive literal substring of the commit subject")
     parser.add_argument("--author", help="case-insensitive author name filter")
     parser.add_argument("--include-merges", action="store_true")
     parser.add_argument("--all", dest="all_refs", action="store_true", help="include commits reachable from all refs")
@@ -70,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         commits = read_commits(args.repository, include_merges=args.include_merges, all_refs=args.all_refs)
     except GitError as error:
         parser.error(str(error))
-    selected = recent_commits(commits, args.days, args.author, now=args.until)
+    selected = recent_commits(commits, args.days, args.author, now=args.until, subject=args.grep)
     if args.oldest_first:
         selected = list(reversed(selected))
     summary = summarize(selected)

@@ -7,7 +7,7 @@ from .model import Commit
 
 def recent_commits(
     commits: list[Commit], days: int, author: str | None = None,
-    now: datetime | None = None,
+    now: datetime | None = None, *, subject: str | None = None,
 ) -> list[Commit]:
     if days < 1:
         raise ValueError("days must be at least 1")
@@ -24,5 +24,6 @@ def recent_commits(
         commit for commit in commits
         if cutoff <= commit.authored_at.astimezone(timezone.utc) <= now
         and (author is None or author.casefold() in commit.author.casefold())
+        and (subject is None or subject.casefold() in commit.subject.casefold())
     ]
     return sorted(selected, key=lambda item: item.authored_at, reverse=True)
