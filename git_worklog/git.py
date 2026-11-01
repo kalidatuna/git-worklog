@@ -11,11 +11,13 @@ class GitError(Exception):
     """Git could not return a usable commit log."""
 
 
-def read_commits(repository: Path, include_merges: bool = False) -> list[Commit]:
+def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bool = False) -> list[Commit]:
     command = [
         "git", "-c", "i18n.logOutputEncoding=UTF-8", "-C", str(repository), "log", "--no-notes", "-z",
         "--format=%H%x00%aI%x00%an%x00%s",
     ]
+    if all_refs:
+        command.append("--all")
     if not include_merges:
         command.append("--no-merges")
     try:
