@@ -7,6 +7,7 @@ from pathlib import Path
 from . import __version__
 from .filtering import recent_commits
 from .git import GitError, read_commits
+from .output import write_report
 from .render import render_markdown
 from .summary import summarize
 
@@ -65,8 +66,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     if args.output:
         try:
-            args.output.write_text(result, encoding="utf-8")
-        except OSError as error:
+            write_report(args.output, result)
+        except (OSError, UnicodeError) as error:
             parser.error(str(error))
     else:
         print(result, end="")
