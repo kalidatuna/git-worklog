@@ -61,7 +61,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.summary_only:
         summary.pop("commits")
     result = (
-        json.dumps(summary, indent=2) + "\n" if args.json
+        json.dumps(summary, indent=2, ensure_ascii=False) + "\n" if args.json
         else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days, include_changes=not args.summary_only)
     )
     if args.output:

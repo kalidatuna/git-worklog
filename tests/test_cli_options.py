@@ -59,3 +59,11 @@ class CliOptionsTests(unittest.TestCase):
             with self.subTest(value=value), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
                 main([".", "--limit", value])
             self.assertEqual(error.exception.code, 2)
+
+    def test_json_keeps_unicode_readable_without_losing_round_trip(self):
+        from datetime import datetime, timezone
+        from git_worklog.model import Commit
+        commits = [Commit("a" * 40, datetime.now(timezone.utc), "Zoë", "ქართული")]
+        _, output = self.invoke("--json", commits=commits)
+        self.assertIn("ქართული", output)
+        self.assertEqual(json.loads(output)["commits"][0]["author"], "Zoë")
