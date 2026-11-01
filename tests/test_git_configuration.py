@@ -24,3 +24,9 @@ class GitConfigurationTests(unittest.TestCase):
         commits = read_commits(self.repo)
         self.assertEqual(len(commits), 1)
         self.assertEqual(commits[0].subject, "Résumé")
+
+    def test_output_encoding_config_cannot_damage_unicode(self):
+        self.git("config", "i18n.logOutputEncoding", "ISO-8859-1")
+        commit = read_commits(self.repo)[0]
+        self.assertEqual(commit.author, "Zoë")
+        self.assertEqual(commit.subject, "Résumé")
