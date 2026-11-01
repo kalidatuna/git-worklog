@@ -12,6 +12,10 @@ def recent_commits(
     if days < 1:
         raise ValueError("days must be at least 1")
     now = now or datetime.now(timezone.utc)
+    if now.utcoffset() is None:
+        raise ValueError("now must include a timezone")
+    if any(commit.authored_at.utcoffset() is None for commit in commits):
+        raise ValueError("commit author timestamps must include a timezone")
     try:
         cutoff = now - timedelta(days=days)
     except OverflowError:
