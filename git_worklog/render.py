@@ -33,6 +33,8 @@ def render_markdown(summary: dict, repository_name: str, days: int, include_chan
         day = commit["date_utc"][:10]
         subject = _text(commit["subject"])
         lines.append(f"- {day} `{commit['sha'][:7]}` {subject} ({_text(commit['author'])})")
-    if not summary["commits"]:
+    if summary.get("omitted_commits"):
+        lines.append(f"- {summary['omitted_commits']} additional commit(s) omitted.")
+    if not summary["commits"] and not summary.get("omitted_commits"):
         lines.append("- No changes in this period.")
     return "\n".join(lines) + "\n"

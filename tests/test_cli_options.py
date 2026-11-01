@@ -40,3 +40,22 @@ class CliOptionsTests(unittest.TestCase):
         report = json.loads(output)
         self.assertEqual(report["total"], 0)
         self.assertNotIn("commits", report)
+
+    def test_limit_preserves_aggregate_counts_and_exposes_omissions(self):
+        from datetime import datetime, timezone
+        from git_worklog.model import Commit
+        commits = [Commit(str(i) * 40, datetime.now(timezone.utc), "Ada", "Work") for i in range(3)]
+        _, output = self.invoke("--limit", "1", "--json", commits=commits)
+        report = json.loads(output)
+        self.assertEqual(report["total"], 3)
+        self.assertEqual(report["by_author"], {"Ada": 3})
+        self.assertEqual(len(report["commits"]), 1)
+        self.assertEqual(report["omitted_commits"], 2)
+        _, markdown = self.invoke("--limit", "0", commits=commits)
+        self.assertIn("3 additional commit(s) omitted", markdown)
+        self.assertNotIn("No changes", markdown)
+    def test_invalid_limits_fail_as_cli_usage_errors(self):
+        for value in ("-1", "no"):
+            with self.subTest(value=value), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+                main([".", "--limit", value])
+            self.assertEqual(error.exception.code, 2)
