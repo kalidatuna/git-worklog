@@ -27,3 +27,8 @@ python3 -m git_worklog /path/to/repo --summary-only --json
 counts. Use `--limit 0` to hide entries and retain an omission count, or
 `--summary-only` to omit the changes section entirely. See
 [development](docs/development.md) for local checks.
+
+The repository path now defaults to the current directory. Use `--all` for all
+local refs, `--until` for historical periods, `--grep` for subject matching,
+`--oldest-first` for chronological entries, and `--output -` for stdout. See
+[history selection](docs/history-selection.md) for examples and exact behavior.

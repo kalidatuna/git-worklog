@@ -14,7 +14,7 @@ The author filter matches a case-insensitive substring of the author name.
 A date window larger than the representable calendar includes all past commits
 instead of overflowing; future-dated commits remain excluded.
 
-The command reads all reachable commits. Large repositories may take longer.
+The command reads HEAD-reachable commits, or all local refs with `--all`. Large repositories may take longer.
 Markdown escapes report names, author names, and subjects as literal text and
 collapses embedded whitespace onto a single line. JSON preserves original text
 and writes readable Unicode. Review repository content before publishing.
