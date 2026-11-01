@@ -26,3 +26,8 @@ class CliOptionsTests(unittest.TestCase):
             main(["--version"])
         self.assertEqual(error.exception.code, 0)
         self.assertIn(__version__, output.getvalue())
+
+    def test_report_name_can_be_overridden(self):
+        result, output = self.invoke("--name", "Weekly [project]")
+        self.assertEqual(result, 0)
+        self.assertTrue(output.startswith(r"# Worklog: Weekly \[project\]"))

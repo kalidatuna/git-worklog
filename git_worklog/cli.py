@@ -25,6 +25,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Summarize local Git history", allow_abbrev=False)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("repository", type=Path)
+    parser.add_argument("--name", help="override the Markdown report repository name")
     parser.add_argument("--days", type=positive_days, default=7)
     parser.add_argument("--author", help="case-insensitive author name filter")
     parser.add_argument("--include-merges", action="store_true")
@@ -41,7 +42,7 @@ def main(argv: list[str] | None = None) -> int:
     summary = summarize(selected)
     result = (
         json.dumps(summary, indent=2) + "\n" if args.json
-        else render_markdown(summary, args.repository.resolve().name, args.days)
+        else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days)
     )
     if args.output:
         try:
