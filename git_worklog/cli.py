@@ -29,6 +29,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--days", type=positive_days, default=7)
     parser.add_argument("--author", help="case-insensitive author name filter")
     parser.add_argument("--include-merges", action="store_true")
+    parser.add_argument("--summary-only", action="store_true", help="omit individual commits from the report")
     parser.add_argument("--json", action="store_true", help="output JSON instead of Markdown")
     parser.add_argument("--output", type=Path, help="write report to this file")
     args = parser.parse_args(argv)
@@ -40,9 +41,11 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(str(error))
     selected = recent_commits(commits, args.days, args.author)
     summary = summarize(selected)
+    if args.summary_only:
+        summary.pop("commits")
     result = (
         json.dumps(summary, indent=2) + "\n" if args.json
-        else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days)
+        else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days, include_changes=not args.summary_only)
     )
     if args.output:
         try:

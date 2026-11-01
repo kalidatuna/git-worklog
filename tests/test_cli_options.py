@@ -31,3 +31,12 @@ class CliOptionsTests(unittest.TestCase):
         result, output = self.invoke("--name", "Weekly [project]")
         self.assertEqual(result, 0)
         self.assertTrue(output.startswith(r"# Worklog: Weekly \[project\]"))
+
+    def test_summary_only_omits_individual_commits_in_both_formats(self):
+        _, markdown = self.invoke("--summary-only")
+        self.assertIn("## Authors", markdown)
+        self.assertNotIn("## Changes", markdown)
+        _, output = self.invoke("--summary-only", "--json")
+        report = json.loads(output)
+        self.assertEqual(report["total"], 0)
+        self.assertNotIn("commits", report)

@@ -11,7 +11,7 @@ def _text(value: str) -> str:
     return re.sub(r"([\\\x60*_{}\[\]()#+.!|>~-])", r"\\\1", value)
 
 
-def render_markdown(summary: dict, repository_name: str, days: int) -> str:
+def render_markdown(summary: dict, repository_name: str, days: int, include_changes: bool = True) -> str:
     lines = [
         f"# Worklog: {_text(repository_name)}", "",
         f"Last {days} day(s), UTC · {summary['total']} commit(s)", "",
@@ -26,6 +26,8 @@ def render_markdown(summary: dict, repository_name: str, days: int) -> str:
         lines.extend(f"- {_text(author)}: {count}" for author, count in summary["by_author"].items())
     else:
         lines.append("- No authors in this period.")
+    if not include_changes:
+        return "\n".join(lines) + "\n"
     lines.extend(["", "## Changes", ""])
     for commit in summary["commits"]:
         day = commit["date_utc"][:10]
