@@ -15,5 +15,26 @@ A date window larger than the representable calendar includes all past commits
 instead of overflowing; future-dated commits remain excluded.
 
 The command reads all reachable commits. Large repositories may take longer.
-Its Markdown output is intended for personal notes; commit subjects and author
-names come from the repository and should be reviewed before publishing.
+Markdown escapes report names, author names, and subjects as literal text and
+collapses embedded whitespace onto a single line. JSON preserves original text
+and writes readable Unicode. Review repository content before publishing.
+
+## Report options
+
+- `--name TEXT` overrides the Markdown heading only; it does not change filtering.
+- `--limit N` accepts a nonnegative integer. Aggregates cover the full selected
+  period. JSON adds `omitted_commits` when entries are hidden; Markdown reports
+  the omitted count. Entries remain in newest author-timestamp order.
+- `--summary-only` removes the Markdown changes section and the JSON `commits`
+  key. When combined with `--limit`, aggregate-only output takes precedence.
+- `--version` prints the package version without reading a repository.
+- Option names must be spelled out; abbreviated flags are rejected.
+
+Reports written with `--output` use UTF-8 and an atomic replacement in the
+destination directory. Existing file permissions are retained. A failed write
+leaves the previous report intact and removes the temporary file. The parent
+directory must already exist, and symbolic-link output paths are rejected.
+The command reports input, Git, and file-output failures with exit status 2.
+
+Git notes and user-configured log output encodings do not alter parsed records.
+The Python filtering API requires timezone-aware reference and commit timestamps.

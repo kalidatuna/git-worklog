@@ -14,3 +14,16 @@ python3 -m git_worklog /path/to/repo --days 7 --output weekly.md
 commits are skipped by default; use `--include-merges` to include them. The
 command exits 0 on success and 2 for invalid input or Git errors. See
 [behavior](docs/behavior.md) for timezone and history details.
+
+Report controls:
+
+```sh
+python3 -m git_worklog --version
+python3 -m git_worklog /path/to/repo --name "Weekly engineering" --limit 20
+python3 -m git_worklog /path/to/repo --summary-only --json
+```
+
+`--limit N` caps the individual changes shown while keeping all aggregate
+counts. Use `--limit 0` to hide entries and retain an omission count, or
+`--summary-only` to omit the changes section entirely. See
+[development](docs/development.md) for local checks.
