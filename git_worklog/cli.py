@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from datetime import datetime, timezone
 
 from . import __version__
 from .filtering import recent_commits
@@ -32,6 +33,16 @@ def nonnegative_limit(value: str) -> int:
     return limit
 
 
+def utc_timestamp(value: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(value.removesuffix("Z") + "+00:00" if value.endswith("Z") else value)
+        if parsed.tzinfo is None:
+            raise ValueError("timezone required")
+        return parsed.astimezone(timezone.utc)
+    except (ValueError, OverflowError) as error:
+        raise argparse.ArgumentTypeError("until must be an ISO 8601 timestamp with a timezone and a representable UTC date") from error
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Summarize local Git history", allow_abbrev=False)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -39,6 +50,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="repository directory (default: current directory)")
     parser.add_argument("--name", help="override the Markdown report repository name")
     parser.add_argument("--days", type=positive_days, default=7)
+    parser.add_argument("--until", type=utc_timestamp, help="end the rolling window at this ISO 8601 timestamp")
     parser.add_argument("--author", help="case-insensitive author name filter")
     parser.add_argument("--include-merges", action="store_true")
     parser.add_argument("--all", dest="all_refs", action="store_true", help="include commits reachable from all refs")
@@ -53,8 +65,10 @@ def main(argv: list[str] | None = None) -> int:
         commits = read_commits(args.repository, include_merges=args.include_merges, all_refs=args.all_refs)
     except GitError as error:
         parser.error(str(error))
-    selected = recent_commits(commits, args.days, args.author)
+    selected = recent_commits(commits, args.days, args.author, now=args.until)
     summary = summarize(selected)
+    if args.until is not None:
+        summary["period_end_utc"] = args.until.isoformat()
     if args.limit is not None and not args.summary_only:
         omitted = max(0, summary["total"] - args.limit)
         summary["commits"] = summary["commits"][:args.limit]
@@ -64,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
         summary.pop("commits")
     result = (
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n" if args.json
-        else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days, include_changes=not args.summary_only)
+        else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days, include_changes=not args.summary_only, until=args.until)
     )
     if args.output:
         try:

@@ -3,6 +3,7 @@
 
 import html
 import re
+from datetime import datetime
 
 
 def _text(value: str) -> str:
@@ -11,10 +12,11 @@ def _text(value: str) -> str:
     return re.sub(r"([\\\x60*_{}\[\]()#+.!|>~-])", r"\\\1", value)
 
 
-def render_markdown(summary: dict, repository_name: str, days: int, include_changes: bool = True) -> str:
+def render_markdown(summary: dict, repository_name: str, days: int, include_changes: bool = True, *, until: datetime | None = None) -> str:
+    period = f"{days} day(s) ending {until.isoformat()}" if until is not None else f"Last {days} day(s)"
     lines = [
         f"# Worklog: {_text(repository_name)}", "",
-        f"Last {days} day(s), UTC · {summary['total']} commit(s)", "",
+        f"{period}, UTC · {summary['total']} commit(s)", "",
         "## Commits by day", "",
     ]
     if summary["by_day"]:
