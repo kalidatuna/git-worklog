@@ -54,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--author", help="case-insensitive author name filter")
     parser.add_argument("--include-merges", action="store_true")
     parser.add_argument("--all", dest="all_refs", action="store_true", help="include commits reachable from all refs")
+    parser.add_argument("--oldest-first", action="store_true", help="display matching commits in chronological order")
     parser.add_argument("--limit", type=nonnegative_limit, help="maximum individual commits to display; totals remain complete")
     parser.add_argument("--summary-only", action="store_true", help="omit individual commits from the report")
     parser.add_argument("--json", action="store_true", help="output JSON instead of Markdown")
@@ -70,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
     except GitError as error:
         parser.error(str(error))
     selected = recent_commits(commits, args.days, args.author, now=args.until)
+    if args.oldest_first:
+        selected = list(reversed(selected))
     summary = summarize(selected)
     if args.until is not None:
         summary["period_end_utc"] = args.until.isoformat()
