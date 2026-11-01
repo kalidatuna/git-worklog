@@ -59,7 +59,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="output JSON instead of Markdown")
     parser.add_argument("--output", type=Path, help="write report to this file; use - for stdout")
     args = parser.parse_args(argv)
-    if not args.repository.is_dir():
+    try:
+        is_directory = args.repository.is_dir()
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    if not is_directory:
         parser.error("repository must be a directory")
     try:
         commits = read_commits(args.repository, include_merges=args.include_merges, all_refs=args.all_refs)
@@ -83,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.output is not None and args.output != Path("-"):
         try:
             write_report(args.output, result)
-        except (OSError, UnicodeError) as error:
+        except (OSError, ValueError) as error:
             parser.error(str(error))
     else:
         print(result, end="")
