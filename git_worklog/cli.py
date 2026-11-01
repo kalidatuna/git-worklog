@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit", type=nonnegative_limit, help="maximum individual commits to display; totals remain complete")
     parser.add_argument("--summary-only", action="store_true", help="omit individual commits from the report")
     parser.add_argument("--json", action="store_true", help="output JSON instead of Markdown")
-    parser.add_argument("--output", type=Path, help="write report to this file")
+    parser.add_argument("--output", type=Path, help="write report to this file; use - for stdout")
     args = parser.parse_args(argv)
     if not args.repository.is_dir():
         parser.error("repository must be a directory")
@@ -80,7 +80,7 @@ def main(argv: list[str] | None = None) -> int:
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n" if args.json
         else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days, include_changes=not args.summary_only, until=args.until)
     )
-    if args.output:
+    if args.output is not None and args.output != Path("-"):
         try:
             write_report(args.output, result)
         except (OSError, UnicodeError) as error:
