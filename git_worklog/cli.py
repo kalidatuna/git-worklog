@@ -21,7 +21,7 @@ def positive_days(value: str) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Summarize local Git history")
+    parser = argparse.ArgumentParser(description="Summarize local Git history", allow_abbrev=False)
     parser.add_argument("repository", type=Path)
     parser.add_argument("--days", type=positive_days, default=7)
     parser.add_argument("--author", help="case-insensitive author name filter")
