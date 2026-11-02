@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -30,3 +31,27 @@ class GitConfigurationTests(unittest.TestCase):
         commit = read_commits(self.repo)[0]
         self.assertEqual(commit.author, "Zoë")
         self.assertEqual(commit.subject, "Résumé")
+
+    @unittest.skipUnless(shutil.which("ssh-keygen"), "OpenSSH is required for signing fixture")
+    def test_signature_display_configuration_does_not_corrupt_records(self):
+        key = self.repo / "test-signing-key"
+        subprocess.run(
+            ["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(key)],
+            check=True, capture_output=True,
+        )
+        signers = self.repo / "allowed-signers"
+        signers.write_text("z@example.test " + key.with_suffix(".pub").read_text(), encoding="utf-8")
+        self.git("config", "gpg.format", "ssh")
+        self.git("config", "user.signingkey", str(key))
+        self.git("config", "gpg.ssh.allowedSignersFile", str(signers))
+        self.git("commit", "-q", "-S", "--allow-empty", "-m", "Signed change")
+        sha = self.git("rev-parse", "HEAD").stdout.decode().strip()
+        self.git("config", "log.showSignature", "true")
+
+        commits = read_commits(self.repo)
+
+        self.assertEqual(len(commits), 2)
+        self.assertEqual(commits[0].sha, sha)
+        self.assertEqual(commits[0].subject, "Signed change")
+        self.assertEqual(commits[0].author, "Zoë")
+        self.assertEqual(commits[1].subject, "Résumé")

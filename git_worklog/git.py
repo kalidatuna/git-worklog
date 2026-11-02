@@ -13,7 +13,8 @@ class GitError(Exception):
 
 def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bool = False) -> list[Commit]:
     command = [
-        "git", "-c", "i18n.logOutputEncoding=UTF-8", "-C", str(repository), "log", "--no-notes", "-z",
+        "git", "-c", "i18n.logOutputEncoding=UTF-8", "-C", str(repository), "log",
+        "--no-notes", "--no-show-signature", "-z",
         "--format=%H%x00%aI%x00%an%x00%s",
     ]
     if all_refs:

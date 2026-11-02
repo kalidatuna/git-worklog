@@ -37,4 +37,7 @@ directory must already exist, and symbolic-link output paths are rejected.
 The command reports input, Git, and file-output failures with exit status 2.
 
 Git notes and user-configured log output encodings do not alter parsed records.
+Signature verification text is suppressed even when `log.showSignature` is enabled,
+so signed commits retain their full commit IDs in reports. Worklog generation does
+not verify signatures; use `git verify-commit` separately when verification is needed.
 The Python filtering API requires timezone-aware reference and commit timestamps.
