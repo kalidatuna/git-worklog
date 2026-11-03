@@ -14,6 +14,8 @@ def recent_commits(
     now = now or datetime.now(timezone.utc)
     if now.utcoffset() is None:
         raise ValueError("now must include a timezone")
+    # Use elapsed time, not local wall time, across daylight-saving changes.
+    now = now.astimezone(timezone.utc)
     if any(commit.authored_at.utcoffset() is None for commit in commits):
         raise ValueError("commit author timestamps must include a timezone")
     try:
@@ -26,4 +28,4 @@ def recent_commits(
         and (author is None or author.casefold() in commit.author.casefold())
         and (subject is None or subject.casefold() in commit.subject.casefold())
     ]
-    return sorted(selected, key=lambda item: item.authored_at, reverse=True)
+    return sorted(selected, key=lambda item: item.authored_at.astimezone(timezone.utc), reverse=True)

@@ -8,6 +8,9 @@ An initialized repository whose current branch has no commits produces an empty
 report. Directories outside a Git repository still produce an error.
 
 Filtering uses author timestamps and a rolling interval of N 24-hour days.
+The Python API converts timezone-aware reference times to UTC before calculating
+the window. Ordering also uses UTC instants, so daylight-saving transitions and
+repeated local hours do not change the window length or chronological order.
 Dates in output are converted to UTC, so a commit near midnight may appear on
 a different day than in your local timezone. Future-dated commits are omitted.
 The author filter matches a case-insensitive substring of the author name.
