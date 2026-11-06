@@ -1,5 +1,6 @@
 """Run Git without a shell and parse NUL-separated log fields."""
 
+import os
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -12,6 +13,10 @@ class GitError(Exception):
 
 
 def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bool = False) -> list[Commit]:
+    # Git hooks and shells can export paths that otherwise override `git -C`.
+    environment = os.environ.copy()
+    for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"):
+        environment.pop(name, None)
     command = [
         "git", "-c", "i18n.logOutputEncoding=UTF-8", "-C", str(repository), "log",
         "--no-notes", "--no-show-signature", "-z",
@@ -22,19 +27,19 @@ def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bo
     if not include_merges:
         command.append("--no-merges")
     try:
-        result = subprocess.run(command, capture_output=True, check=False)
+        result = subprocess.run(command, capture_output=True, check=False, env=environment)
     except OSError as error:
         raise GitError(str(error)) from error
     if result.returncode:
         head = subprocess.run(
             ["git", "-C", str(repository), "symbolic-ref", "--quiet", "HEAD"],
-            capture_output=True, check=False,
+            capture_output=True, check=False, env=environment,
         )
         if head.returncode == 0:
             reference = head.stdout.decode("utf-8", errors="replace").strip()
             exists = subprocess.run(
                 ["git", "-C", str(repository), "show-ref", "--verify", "--quiet", reference],
-                capture_output=True, check=False,
+                capture_output=True, check=False, env=environment,
             )
             if exists.returncode == 1:
                 return []

@@ -3,6 +3,10 @@
 The report reads the current local repository history with `git log`. It
 does not query GitHub, inspect uncommitted changes, or infer issue or pull
 request activity. Merge commits are excluded unless requested.
+The selected repository path takes precedence over inherited `GIT_DIR`,
+`GIT_WORK_TREE`, and `GIT_COMMON_DIR` settings, including when run from a Git
+hook. These variables are removed only from the child Git processes, leaving
+the caller's environment intact.
 Commits with empty messages are counted and keep an empty subject in the output.
 An initialized repository whose current branch has no commits produces an empty
 report. Directories outside a Git repository still produce an error.
