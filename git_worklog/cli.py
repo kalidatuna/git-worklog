@@ -53,6 +53,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--until", type=utc_timestamp, help="end the rolling window at this ISO 8601 timestamp")
     parser.add_argument("--grep", help="case-insensitive literal substring of the commit subject")
     parser.add_argument("--author", help="case-insensitive author name filter")
+    parser.add_argument("--exclude-author", action="append", default=[], metavar="NAME",
+                        help="exclude a case-insensitive author name substring; repeat for multiple names")
     parser.add_argument("--include-merges", action="store_true")
     parser.add_argument("--all", dest="all_refs", action="store_true", help="include commits reachable from all refs")
     parser.add_argument("--oldest-first", action="store_true", help="display matching commits in chronological order")
@@ -61,6 +63,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="output JSON instead of Markdown")
     parser.add_argument("--output", type=Path, help="write report to this file; use - for stdout")
     args = parser.parse_args(argv)
+    if any(not value.strip() for value in args.exclude_author):
+        parser.error("--exclude-author requires a nonempty name")
     try:
         is_directory = args.repository.is_dir()
     except (OSError, ValueError) as error:
@@ -71,7 +75,8 @@ def main(argv: list[str] | None = None) -> int:
         commits = read_commits(args.repository, include_merges=args.include_merges, all_refs=args.all_refs)
     except GitError as error:
         parser.error(str(error))
-    selected = recent_commits(commits, args.days, args.author, now=args.until, subject=args.grep)
+    selected = recent_commits(commits, args.days, args.author, now=args.until,
+                              subject=args.grep, exclude_authors=args.exclude_author)
     if args.oldest_first:
         selected = list(reversed(selected))
     summary = summarize(selected)
