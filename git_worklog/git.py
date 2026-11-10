@@ -12,15 +12,17 @@ class GitError(Exception):
     """Git could not return a usable commit log."""
 
 
-def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bool = False) -> list[Commit]:
+def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bool = False,
+                 use_mailmap: bool = False) -> list[Commit]:
     # Git hooks and shells can export paths that otherwise override `git -C`.
     environment = os.environ.copy()
     for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"):
         environment.pop(name, None)
+    author_field = "%aN" if use_mailmap else "%an"
     command = [
         "git", "-c", "i18n.logOutputEncoding=UTF-8", "-C", str(repository), "log",
         "--no-notes", "--no-show-signature", "-z",
-        "--format=%H%x00%aI%x00%an%x00%s",
+        f"--format=%H%x00%aI%x00{author_field}%x00%s",
     ]
     if all_refs:
         command.append("--all")

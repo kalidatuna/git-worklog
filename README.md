@@ -9,6 +9,7 @@ python3 -m git_worklog /path/to/repo --days 14
 python3 -m git_worklog /path/to/repo --days 30 --author Datuna --json
 python3 -m git_worklog /path/to/repo --days 7 --output weekly.md
 python3 -m git_worklog /path/to/repo --exclude-author 'dependabot[bot]'
+python3 -m git_worklog /path/to/repo --mailmap --summary-only
 ```
 
 `--days` selects commits with an author timestamp in the last N days. Merge

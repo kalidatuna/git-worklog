@@ -51,6 +51,27 @@ The default entry order is newest first. `--oldest-first` reverses matching
 entries before `--limit` applies. Counts still cover all matching commits.
 Aggregate day counts remain newest-day first, regardless of entry order.
 
+## Author aliases
+
+```sh
+git-worklog --mailmap --author 'Canonical Name'
+```
+
+`--mailmap` applies Git's mailmap rules to author names before filtering and
+aggregation. For example, this `.mailmap` entry groups an old email identity under
+one canonical name:
+
+```text
+Canonical Name <canonical@example.test> <old@example.test>
+```
+
+Both `--author` and `--exclude-author` match the mapped name when this option is
+enabled. JSON and Markdown reports use that name too. Without `--mailmap`, names
+remain as recorded in each commit. Commit IDs, dates, and subjects are preserved.
+The Python API provides the same option as `read_commits(..., use_mailmap=True)`.
+Git reads its current mailmap rules, including configured mailmap sources; the
+mapping is not selected from the historical `--until` date.
+
 ## Output destination
 
 ```sh
