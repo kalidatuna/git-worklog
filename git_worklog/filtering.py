@@ -10,6 +10,7 @@ def recent_commits(
     commits: list[Commit], days: int, author: str | None = None,
     now: datetime | None = None, *, subject: str | None = None,
     exclude_authors: Sequence[str] = (),
+    since: datetime | None = None,
 ) -> list[Commit]:
     if days < 1:
         raise ValueError("days must be at least 1")
@@ -23,10 +24,20 @@ def recent_commits(
     now = now.astimezone(timezone.utc)
     if any(commit.authored_at.utcoffset() is None for commit in commits):
         raise ValueError("commit author timestamps must include a timezone")
-    try:
-        cutoff = now - timedelta(days=days)
-    except OverflowError:
-        cutoff = datetime.min.replace(tzinfo=timezone.utc)
+    if since is not None:
+        if since.utcoffset() is None:
+            raise ValueError("since must include a timezone")
+        try:
+            cutoff = since.astimezone(timezone.utc)
+        except OverflowError as error:
+            raise ValueError("since must have a representable UTC date") from error
+        if cutoff > now:
+            raise ValueError("since must not be later than the period end")
+    else:
+        try:
+            cutoff = now - timedelta(days=days)
+        except OverflowError:
+            cutoff = datetime.min.replace(tzinfo=timezone.utc)
     selected = [
         commit for commit in commits
         if cutoff <= commit.authored_at.astimezone(timezone.utc) <= now

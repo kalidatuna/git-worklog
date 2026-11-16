@@ -12,8 +12,10 @@ def _text(value: str) -> str:
     return re.sub(r"([\\\x60*_{}\[\]()#+.!|>~-])", r"\\\1", value)
 
 
-def render_markdown(summary: dict, repository_name: str, days: int, include_changes: bool = True, *, until: datetime | None = None) -> str:
+def render_markdown(summary: dict, repository_name: str, days: int, include_changes: bool = True, *, until: datetime | None = None, since: datetime | None = None) -> str:
     period = f"{days} day(s) ending {until.isoformat()}" if until is not None else f"Last {days} day(s)"
+    if since is not None:
+        period = f"From {since.isoformat()} to {until.isoformat()}" if until is not None else f"Since {since.isoformat()}"
     lines = [
         f"# Worklog: {_text(repository_name)}", "",
         f"{period}, UTC · {summary['total']} commit(s)", "",

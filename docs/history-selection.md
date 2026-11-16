@@ -23,6 +23,20 @@ N-day interval at that instant. Both endpoints are inclusive. The Markdown
 heading includes the requested endpoint; JSON adds `period_end_utc` in UTC.
 Without `--until`, the endpoint is the current clock time.
 
+For an exact range, supply `--since` instead of `--days`:
+
+```sh
+git-worklog --since 2026-09-01T00:00:00Z --until 2026-10-01T00:00:00Z
+```
+
+`--since` uses the same timezone-aware timestamp syntax as `--until`. Both
+endpoints are inclusive. Omitting `--until` captures the current time once as
+the endpoint. A start later than the endpoint, or combining `--since` with
+`--days`, is an argument error. Markdown labels the exact range; JSON includes
+`period_start_utc` and `period_end_utc`. Filters and summary counts use that range
+before any display limit. The Python `recent_commits` API accepts `since` as a
+keyword argument overriding the rolling `days` cutoff.
+
 ## Names, subjects, and order
 
 ```sh

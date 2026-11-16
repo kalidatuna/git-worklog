@@ -40,7 +40,7 @@ def utc_timestamp(value: str) -> datetime:
             raise ValueError("timezone required")
         return parsed.astimezone(timezone.utc)
     except (ValueError, OverflowError) as error:
-        raise argparse.ArgumentTypeError("until must be an ISO 8601 timestamp with a timezone and a representable UTC date") from error
+        raise argparse.ArgumentTypeError("timestamp must be an ISO 8601 timestamp with a timezone and a representable UTC date") from error
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -49,7 +49,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("repository", type=Path, nargs="?", default=Path("."),
                         help="repository directory (default: current directory)")
     parser.add_argument("--name", help="override the Markdown report repository name")
-    parser.add_argument("--days", type=positive_days, default=7)
+    start = parser.add_mutually_exclusive_group()
+    start.add_argument("--days", type=positive_days, default=7)
+    start.add_argument("--since", type=utc_timestamp, help="start the period at this ISO 8601 timestamp instead of using --days")
     parser.add_argument("--until", type=utc_timestamp, help="end the rolling window at this ISO 8601 timestamp")
     parser.add_argument("--grep", help="case-insensitive literal substring of the commit subject")
     parser.add_argument("--author", help="case-insensitive author name filter")
@@ -64,6 +66,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="output JSON instead of Markdown")
     parser.add_argument("--output", type=Path, help="write report to this file; use - for stdout")
     args = parser.parse_args(argv)
+    period_end = args.until
+    if args.since is not None:
+        period_end = period_end or datetime.now(timezone.utc)
+        if args.since > period_end:
+            parser.error("--since must not be later than the period end")
     if any(not value.strip() for value in args.exclude_author):
         parser.error("--exclude-author requires a nonempty name")
     try:
@@ -77,13 +84,16 @@ def main(argv: list[str] | None = None) -> int:
                                all_refs=args.all_refs, use_mailmap=args.mailmap)
     except GitError as error:
         parser.error(str(error))
-    selected = recent_commits(commits, args.days, args.author, now=args.until,
-                              subject=args.grep, exclude_authors=args.exclude_author)
+    selected = recent_commits(commits, args.days, args.author, now=period_end,
+                              subject=args.grep, exclude_authors=args.exclude_author,
+                              since=args.since)
     if args.oldest_first:
         selected = list(reversed(selected))
     summary = summarize(selected)
-    if args.until is not None:
-        summary["period_end_utc"] = args.until.isoformat()
+    if period_end is not None:
+        summary["period_end_utc"] = period_end.isoformat()
+    if args.since is not None:
+        summary["period_start_utc"] = args.since.isoformat()
     if args.limit is not None and not args.summary_only:
         omitted = max(0, summary["total"] - args.limit)
         summary["commits"] = summary["commits"][:args.limit]
@@ -93,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
         summary.pop("commits")
     result = (
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n" if args.json
-        else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days, include_changes=not args.summary_only, until=args.until)
+        else render_markdown(summary, args.name if args.name is not None else args.repository.resolve().name, args.days, include_changes=not args.summary_only, until=period_end, since=args.since)
     )
     if args.output is not None and args.output != Path("-"):
         try:
