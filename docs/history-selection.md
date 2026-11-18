@@ -12,6 +12,20 @@ git-worklog /path/to/repo --all --include-merges
 branches and remote-tracking refs. It does not fetch remote changes. Git notes
 and other non-branch refs can also contribute reachable commits.
 
+To summarize the main line of development through merges:
+
+```sh
+git-worklog --first-parent --include-merges
+```
+
+`--first-parent` follows only the first parent of each merge. Commits reachable
+only through the other merge parents are omitted. Merge commits remain hidden
+unless `--include-merges` is also supplied. Filters, counts, and display limits
+apply after this history selection; entry ordering still uses author timestamps.
+With `--all`, every ref remains a traversal root, so a topic branch can contribute
+its own commits even when its merge's second-parent path is skipped.
+The Python API accepts `read_commits(..., first_parent=True)`.
+
 ## Historical periods
 
 ```sh

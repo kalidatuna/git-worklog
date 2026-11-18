@@ -13,7 +13,7 @@ class GitError(Exception):
 
 
 def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bool = False,
-                 use_mailmap: bool = False) -> list[Commit]:
+                 use_mailmap: bool = False, first_parent: bool = False) -> list[Commit]:
     # Git hooks and shells can export paths that otherwise override `git -C`.
     environment = os.environ.copy()
     for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"):
@@ -26,6 +26,8 @@ def read_commits(repository: Path, include_merges: bool = False, *, all_refs: bo
     ]
     if all_refs:
         command.append("--all")
+    if first_parent:
+        command.append("--first-parent")
     if not include_merges:
         command.append("--no-merges")
     try:

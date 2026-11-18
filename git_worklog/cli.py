@@ -58,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--exclude-author", action="append", default=[], metavar="NAME",
                         help="exclude a case-insensitive author name substring; repeat for multiple names")
     parser.add_argument("--include-merges", action="store_true")
+    parser.add_argument("--first-parent", action="store_true", help="follow only the first parent at merges")
     parser.add_argument("--mailmap", action="store_true", help="map author aliases using Git mailmap rules")
     parser.add_argument("--all", dest="all_refs", action="store_true", help="include commits reachable from all refs")
     parser.add_argument("--oldest-first", action="store_true", help="display matching commits in chronological order")
@@ -81,7 +82,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("repository must be a directory")
     try:
         commits = read_commits(args.repository, include_merges=args.include_merges,
-                               all_refs=args.all_refs, use_mailmap=args.mailmap)
+                               all_refs=args.all_refs, use_mailmap=args.mailmap,
+                               first_parent=args.first_parent)
     except GitError as error:
         parser.error(str(error))
     selected = recent_commits(commits, args.days, args.author, now=period_end,
