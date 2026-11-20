@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -113,5 +114,16 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, ValueError) as error:
             parser.error(str(error))
     else:
+        # Check before writing, so a restrictive console cannot produce a
+        # partial report or silently replace characters in JSON field values.
+        encoding = getattr(sys.stdout, "encoding", None)
+        if encoding:
+            try:
+                result.encode(encoding)
+            except UnicodeEncodeError:
+                if args.json:
+                    result = json.dumps(summary, indent=2, ensure_ascii=True) + "\n"
+                else:
+                    parser.error("stdout encoding cannot represent report text; use --output to write UTF-8")
         print(result, end="")
     return 0

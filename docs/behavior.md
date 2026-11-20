@@ -43,6 +43,12 @@ leaves the previous report intact and removes the temporary file. The parent
 directory must already exist, and symbolic-link output paths are rejected.
 The command reports input, Git, and file-output failures with exit status 2.
 
+JSON sent to stdout uses Unicode escapes when the report cannot be represented
+by the stream's encoding. Decoding the JSON recovers the original names and
+subjects. UTF-8 stdout and file reports keep readable Unicode. If Markdown does
+not fit the stdout encoding, the command returns 2 before writing the report and
+directs you to `--output`, which writes a UTF-8 file independently of the terminal.
+
 Git notes and user-configured log output encodings do not alter parsed records.
 Signature verification text is suppressed even when `log.showSignature` is enabled,
 so signed commits retain their full commit IDs in reports. Worklog generation does
